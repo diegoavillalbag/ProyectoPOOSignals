@@ -26,7 +26,7 @@ public interface Filtro {
             t[i] = i * dt;
             impulso[i] = 0.0; 
         }
-        impulso[0] = 1.0; // El golpe del impulso en t=0
+        impulso[0] = (double) N / 2.0; // El golpe del impulso en t=0
 
         Signal senalImpulso = new Signal(t, impulso);
 

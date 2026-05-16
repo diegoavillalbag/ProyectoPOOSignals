@@ -103,4 +103,42 @@ public class GeneradorGraficasFX {
         return chart;
     }
     
+    /**
+     * Convierte un objeto Signal en una serie de datos lineal.
+     * Útil para superponer datos en gráficos de tiempo (crearGrafica).
+     */
+    public XYChart.Series<Number, Number> convertirSignalASerie(String nombreSerie, Signal signal, int n) {
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        series.setName(nombreSerie);
+
+        double[] x = signal.getT();
+        double[] y = signal.getFt();
+
+        for (int i = 0; i < (x.length / n); i++) {
+            series.getData().add(new XYChart.Data<>(x[i], y[i]));
+        }
+        return series;
+    }
+    
+    /**
+     * Convierte un objeto Signal en una serie de datos logarítmica.
+     * Útil para superponer datos en gráficos creados con crearGraficaXLog.
+     */
+    public XYChart.Series<Number, Number> convertirSignalASerieLog(String nombreSerie, Signal signal) {
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        series.setName(nombreSerie);
+
+        double[] x = signal.getT();
+        double[] y = signal.getFt();
+
+        // Empezamos en 1 para evitar log10(0)
+        for (int i = 1; i < x.length; i++) {
+            if (x[i] > 0) {
+                double xLog = Math.log10(x[i]);
+                series.getData().add(new XYChart.Data<>(xLog, y[i]));
+            }
+        }
+        return series;
+    }
+    
 }

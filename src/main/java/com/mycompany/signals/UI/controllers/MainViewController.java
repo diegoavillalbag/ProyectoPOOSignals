@@ -10,38 +10,40 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.chart.LineChart;
 import javafx.event.ActionEvent;
+import javafx.scene.chart.XYChart;
 
 // Importar los paquetes de señales y filtros
 import com.mycompany.signals.model.Signal;
-import com.mycompany.signals.model.FiltroDiferencias;
 import com.mycompany.signals.model.GeneradorFiltros;
 import com.mycompany.signals.UI.GeneradorGraficasFX;
+
 
 public class MainViewController implements Initializable {
 
     // Constantes del programa
-    private final int N = 2048; // Cantidad de puntos de señales y fft
+    private final int N = 4096; // Cantidad de puntos de señales y fft
     private final int n = 4; // Reduccion para no graficar todos los puntos
-    private final int fs = 2048; 
+    private final int fs = 4096; 
     
     // Variables del programa
     private Signal senalEntrada;
     private Signal senalEntradaFFT;
+    private Signal respuestaFiltro;
     private Signal senalSalida;
     private Signal senalSalidaFFT;
-    private Filtro filtroActual;
+    private Filtro filtroActual; // posiblemente se deba modificar a un arreglo de filtros luego
     
     // Objetos de la interfaz
-    GeneradorGraficasFX Graficador = new GeneradorGraficasFX();
+    GeneradorGraficasFX Graficador = new GeneradorGraficasFX(); // Objeto de tipo graficador para manejar los graficos
     
     // Graficos
     @FXML private GridPane SignalGrid;
     
     
     // Menu señal de entrada
-    @FXML private ChoiceBox<String> SignalSelector;
-    @FXML private TextField SignalFreq;
-    @FXML private TextField SignalAmp;
+    @FXML private ChoiceBox<String> SignalSelector; // Para seleccionar el tipo de señal a usar
+    @FXML private TextField SignalFreq; // Entrada de la frecuencia de la señal de entrada
+    @FXML private TextField SignalAmp; // Entrada de la amplitud de la señal de entrada
     
     @FXML
     @Override
@@ -61,27 +63,45 @@ public class MainViewController implements Initializable {
         senalEntradaFFT = senalEntrada.calcularFFT();
         
         filtroActual = GeneradorFiltros.crearPasaBajos(100, fs);
+        respuestaFiltro = filtroActual.obtenerRespuestaFrecuencia(N, fs);
         
         senalSalida = filtroActual.aplicar(senalEntrada);
         senalSalidaFFT = senalSalida.calcularFFT();
         
         this.actualizarGraficas();
         
+        // Al inicializar se deben cargar los datos necesarios dentro de la interfaz
+        // Definir las opciones
+        String[] opcionesTipoEntrada = {"Senoidal", "Cuadrada"};
+
+        // Cargar las opciones al ChoiceBox
+        SignalSelector.getItems().addAll(opcionesTipoEntrada);
+
+        // Opcional: Seleccionar una por defecto
+        SignalSelector.setValue(opcionesTipoEntrada[0]);
+        
+        // Cargar datos a los textfield
+        SignalFreq.setText("10");
+        SignalAmp.setText("1");
+        
+        
     }    
     
     public void actualizarGraficas(){
-        // 0. Objeto creador de graficas
-        
         
         // 1. Limpiar la cuadrícula por si hay gráficos viejos
         SignalGrid.getChildren().clear();
 
         // 2. Obtener los gráficos de tus métodos
-        LineChart<Number, Number> chart1 = Graficador.crearGrafica("Grafico 1", "serie 1", senalEntrada, n);
-        LineChart<Number, Number> chart2 = Graficador.crearGraficaXLog("Grafico 2", "serie 2", senalEntradaFFT);
-        LineChart<Number, Number> chart3 = Graficador.crearGrafica("Grafico 3", "serie 3", senalSalida, n);
-        LineChart<Number, Number> chart4 = Graficador.crearGraficaXLog("Grafico 4", "serie 4", senalSalidaFFT);
-
+        LineChart<Number, Number> chart1 = Graficador.crearGrafica("Señal de Entrada", "Entrada", senalEntrada, n);
+        LineChart<Number, Number> chart2 = Graficador.crearGrafica("FFT de la Señal de Entrada", "FFT Entrada", senalEntradaFFT, 1);
+        LineChart<Number, Number> chart3 = Graficador.crearGrafica("Señal de Salida", "Salida", senalSalida, n);
+        LineChart<Number, Number> chart4 = Graficador.crearGrafica("FFT de la Señal de Salida", "FFt Salida", senalSalidaFFT, 1);
+        XYChart.Series<Number, Number> serieFiltro = Graficador.convertirSignalASerie("Respuesta Filtro", respuestaFiltro, 1);
+    
+        // Añadir la serie al gráfico existente
+        chart2.getData().add(serieFiltro);
+        
         // 3. Posicionar en el Grid (Columna, Fila)
         // Fila 0
         SignalGrid.add(chart1, 0, 0); // Arriba Izquierda
@@ -95,7 +115,45 @@ public class MainViewController implements Initializable {
     // Metodos OnAction
     @FXML
     private void SignalApplyOnAction(ActionEvent event) { 
-        // Tu lógica aquí
+        // Metodo del boton para cambiar la senal de entrada
+        
+        // Obtener los datos de la interfaz
+        String seleccionSenalEntrada = SignalSelector.getValue();
+        String freqEntrada = SignalFreq.getText();
+        String ampEntrada = SignalAmp.getText();
+        
+        // Verificar que los input sean numericos (establecer limites)
+        if( !(freqEntrada.chars().allMatch(Character::isDigit) && ampEntrada.chars().allMatch(Character::isDigit)) ){
+            SignalFreq.setText("ERROR");
+            SignalAmp.setText("ERROR");
+            return;
+        }
+        
+        // Convertir las entradas a enteros
+        int freqEntradaInt = Integer.parseInt(freqEntrada);
+        int ampEntradaInt = Integer.parseInt(ampEntrada);
+        
+        // Si la opcion seleccionada es senoidal
+        if( seleccionSenalEntrada.equals("Senoidal") ){
+            // Ya verificadas las entradas falta actualizar los graficos con los nuevos datos
+            senalEntrada = Signal.crearSenoidal(ampEntradaInt, freqEntradaInt, fs, N);
+        }
+        
+        // Si la opcion seleccionada es cuadarada
+        if( seleccionSenalEntrada.equals("Cuadrada") ){
+            // Ya verificadas las entradas falta actualizar los graficos con los nuevos datos
+            senalEntrada = Signal.crearCuadrada(ampEntradaInt, freqEntradaInt, fs, N);
+        }
+        
+        // Actualizar la FFT de la entrada
+        senalEntradaFFT = senalEntrada.calcularFFT();
+        
+        // Actualizar las salidas
+        senalSalida = filtroActual.aplicar(senalEntrada);
+        senalSalidaFFT = senalSalida.calcularFFT();
+        
+        actualizarGraficas();
+        
     }
     
     @FXML
