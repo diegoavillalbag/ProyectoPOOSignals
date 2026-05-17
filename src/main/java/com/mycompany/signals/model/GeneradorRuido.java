@@ -2,6 +2,10 @@ package com.mycompany.signals.model;
 
 import java.util.Random;
 
+/**
+ * Fábrica de señales de ruido para sumar o mezclar con la entrada.
+ * Incluye ruido gaussiano, porcentual e interferencia senoidal.
+ */
 public class GeneradorRuido {
 
     private static final Random random = new Random();
@@ -23,7 +27,7 @@ public class GeneradorRuido {
             // nextGaussian() genera valores con distribución normal (media 0, varianza 1)
             ft[i] = random.nextGaussian() * amplitudMax;
         }
-        
+
         return new Signal(t, ft);
     }
 
@@ -38,14 +42,14 @@ public class GeneradorRuido {
         double[] tOriginal = senalBase.getT();
         double[] ftOriginal = senalBase.getFt();
         int n = ftOriginal.length;
-        
+
         double[] ftConRuido = new double[n];
 
         for (int i = 0; i < n; i++) {
             // Genera un multiplicador aleatorio entre -porcentaje y +porcentaje
             // Por ejemplo, si porcentaje = 0.10, el factor va de -0.10 a +0.10
             double factorAleatorio = (random.nextDouble() * 2.0 - 1.0) * porcentaje;
-            
+
             // Se calcula el error (valor original * porcentaje aleatorio)
             ftConRuido[i] = ftOriginal[i] * factorAleatorio;
         }
@@ -53,7 +57,7 @@ public class GeneradorRuido {
         // Devolvemos una nueva señal clonando el eje temporal original por seguridad
         return new Signal(tOriginal.clone(), ftConRuido);
     }
-    
+
     /**
      * Genera un ruido de interferencia tonal (una senoidal extra).
      * Utiliza el método nativo de la clase Signal.

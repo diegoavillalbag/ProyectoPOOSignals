@@ -4,6 +4,6 @@ com\mycompany\signals\UI\GeneradorGraficasFX.class
 com\mycompany\signals\model\GeneradorRuido.class
 com\mycompany\signals\model\Signal.class
 com\mycompany\signals\model\Filtro.class
+com\mycompany\signals\UI\GeneradorGraficasFX$DatosFftGrafico.class
 com\mycompany\signals\model\GeneradorFiltros.class
 com\mycompany\signals\UI\controllers\MainViewController.class
-com\mycompany\signals\UI\GeneradorGraficasFX$1.class

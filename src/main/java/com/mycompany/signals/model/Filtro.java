@@ -1,7 +1,11 @@
 package com.mycompany.signals.model;
 
+/**
+ * Contrato para filtros digitales en tiempo discreto.
+ * Permite aplicar el filtro a una señal y obtener su respuesta en frecuencia.
+ */
 public interface Filtro {
-    
+
     /**
      * Aplica el filtro a una señal dada.
      * @param entrada La señal original.
@@ -14,17 +18,17 @@ public interface Filtro {
      * Utiliza el teorema DSP: H(w) = FFT(h[n]) donde h[n] es la respuesta al impulso.
      * @param N Número de puntos para la resolución (Debe ser potencia de 2, ej. 1024).
      * @param fs Frecuencia de muestreo en Hz.
-     * @return Arreglo con las magnitudes de atenuación/ganancia de 0 a fs/2.
+     * @return Señal con magnitudes de atenuación/ganancia de 0 a fs/2.
      */
     default Signal obtenerRespuestaFrecuencia(int N, double fs) {
         // 1. Fabricar el Impulso Unitario (Delta de Dirac discreta)
         double[] t = new double[N];
         double[] impulso = new double[N];
-        
+
         double dt = 1.0 / fs;
         for (int i = 0; i < N; i++) {
             t[i] = i * dt;
-            impulso[i] = 0.0; 
+            impulso[i] = 0.0;
         }
         impulso[0] = fs; // El golpe del impulso en t=0
 

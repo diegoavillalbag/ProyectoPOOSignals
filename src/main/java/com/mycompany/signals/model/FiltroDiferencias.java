@@ -1,14 +1,18 @@
 package com.mycompany.signals.model;
 
+/**
+ * Filtro IIR definido por una ecuación de diferencias con coeficientes b (entrada) y a (salida).
+ * Implementa la relación: y[n] = sum(b[i]*x[n-i]) - sum(a[j]*y[n-j]), con a[0] = 1.
+ */
 public class FiltroDiferencias implements Filtro {
-    
+
     private final double[] b; // Coeficientes del numerador (entradas x)
     private final double[] a; // Coeficientes del denominador (salidas pasadas y)
 
     /**
      * @param b Arreglo de coeficientes feedforward (b0, b1, b2...)
-     * @param a Arreglo de coeficientes feedback. OJO: a[0] suele ser 1.0 y se ignora en la resta, 
-     * los coeficientes efectivos empiezan en a[1].
+     * @param a Arreglo de coeficientes feedback. OJO: a[0] suele ser 1.0 y se ignora en la resta,
+     *          los coeficientes efectivos empiezan en a[1].
      */
     public FiltroDiferencias(double[] b, double[] a) {
         this.b = b;
@@ -46,7 +50,7 @@ public class FiltroDiferencias implements Filtro {
             y[n] = sumaX - sumaY;
         }
 
-        // Devolvemos la nueva señal purificada, copiando el eje de tiempo original
+        // Devolvemos la nueva señal, copiando el eje de tiempo original
         return new Signal(entrada.getT().clone(), y);
     }
 }
