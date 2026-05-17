@@ -164,15 +164,94 @@ public class GeneradorGraficasFX {
         return esInicio || esFin || cambioDesdeAnterior || cambioHaciaSiguiente;
     }
 
-    /** Graficado en tiempo: recorte de longitud + muestreo cada {@code paso} índices. */
+    /**
+     * Graficado en tiempo: utiliza "Peak Decimation" avanzado con interpolación.
+     * Extrae el mínimo, el máximo, el valor medio, y si la señal cruza el eje X,
+     * calcula el instante exacto del cruce mediante interpolación lineal.
+     */
     private void graficarConMuestreo(XYChart.Series<Number, Number> serie, double[] x, double[] y, int limite, int paso) {
-        for (int i = 0; i < limite; i++) {
-            boolean esInicio = (i == 0);
-            boolean esFin = (i == limite - 1);
-            if (!esInicio && !esFin && (i % paso != 0)) {
-                continue;
+        if (paso <= 1) {
+            for (int i = 0; i < limite; i++) {
+                serie.getData().add(new XYChart.Data<>(x[i], y[i]));
             }
-            serie.getData().add(new XYChart.Data<>(x[i], y[i]));
+            return;
+        }
+
+        double ultimoX = -Double.MAX_VALUE; // Para evitar puntos duplicados globales
+
+        for (int inicio = 0; inicio < limite; inicio += paso) {
+            int fin = Math.min(inicio + paso, limite);
+            
+            // 1. Encontrar mínimo y máximo
+            int idxMin = inicio;
+            int idxMax = inicio;
+            double minY = y[inicio];
+            double maxY = y[inicio];
+            
+            for (int i = inicio + 1; i < fin; i++) {
+                if (y[i] > maxY) { maxY = y[i]; idxMax = i; }
+                if (y[i] < minY) { minY = y[i]; idxMin = i; }
+            }
+            
+            // 2. Encontrar el valor más cercano al medio de los picos
+            double medioY = (minY + maxY) / 2.0;
+            int idxMedio = inicio;
+            double menorDif = Double.MAX_VALUE;
+            
+            for (int i = inicio; i < fin; i++) {
+                double dif = Math.abs(y[i] - medioY);
+                if (dif < menorDif) {
+                    menorDif = dif;
+                    idxMedio = i;
+                }
+            }
+
+            // Arreglos temporales para los puntos de este bloque (máximo 4 puntos)
+            double[] blockX = new double[4];
+            double[] blockY = new double[4];
+            int count = 0;
+
+            blockX[count] = x[idxMin];   blockY[count++] = y[idxMin];
+            blockX[count] = x[idxMax];   blockY[count++] = y[idxMax];
+            blockX[count] = x[idxMedio]; blockY[count++] = y[idxMedio];
+
+            // 3. INTERPOLACIÓN LINEAL DEL CERO
+            // Solo buscamos si hay un cruce estricto por cero (uno negativo y otro positivo)
+            if (minY < 0 && maxY > 0) {
+                for (int i = inicio; i < fin - 1; i++) {
+                    // Detectar dónde ocurre exactamente el cambio de signo
+                    if ((y[i] < 0 && y[i + 1] > 0) || (y[i] > 0 && y[i + 1] < 0)) {
+                        double x1 = x[i];   double y1 = y[i];
+                        double x2 = x[i+1]; double y2 = y[i+1];
+                        
+                        // Fórmula de interpolación lineal para y = 0
+                        double xZero = x1 - y1 * (x2 - x1) / (y2 - y1);
+                        
+                        blockX[count] = xZero; 
+                        blockY[count++] = 0.0;
+                        break; // Solo necesitamos anclar un cruce por bloque
+                    }
+                }
+            }
+
+            // 4. Ordenar los puntos del bloque cronológicamente (eje X)
+            // Usamos un simple Bubble Sort ya que son máximo 4 elementos (ultrarrápido)
+            for (int i = 0; i < count - 1; i++) {
+                for (int j = i + 1; j < count; j++) {
+                    if (blockX[i] > blockX[j]) {
+                        double tempX = blockX[i]; blockX[i] = blockX[j]; blockX[j] = tempX;
+                        double tempY = blockY[i]; blockY[i] = blockY[j]; blockY[j] = tempY;
+                    }
+                }
+            }
+
+            // 5. Agregar a la gráfica filtrando duplicados exactos en el tiempo
+            for (int i = 0; i < count; i++) {
+                if (blockX[i] > ultimoX) {
+                    serie.getData().add(new XYChart.Data<>(blockX[i], blockY[i]));
+                    ultimoX = blockX[i];
+                }
+            }
         }
     }
 

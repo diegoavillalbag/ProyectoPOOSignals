@@ -24,12 +24,13 @@ import com.mycompany.signals.model.GeneradorRuido;
 public class MainViewController implements Initializable {
 
     // --- Constantes del programa ---
-    private final int N = 16384; // Cantidad de puntos de señales y FFT
-    private final int paso = 1; // Muestreo temporal: cada cuántos índices se grafica un punto (1 = todos)
-    private final int pasoFft = 16; // FFT: tamaño de ventana de submuestreo (pico por bloque)
+    private final int N = 65536; // Cantidad de puntos de señales y FFT
+    private final int paso = 7; // Muestreo temporal: cada cuántos índices se grafica un punto (1 = todos)
+    private final int pasoFft = 32; // FFT: tamaño de ventana de submuestreo (pico por bloque)
     private final int pasoRespuestaFiltro = 50; // Respuesta del filtro en gráfico FFT
-    private final int factorRecorte = 50; // Recorte temporal: se grafican los primeros N/factorRecorte puntos
-    private final int fs = 16384; // Frecuencia de muestreo (Hz)
+    private final int factorRecorte = 100; // Recorte temporal: se grafican los primeros N/factorRecorte puntos
+    private final int factorRecorteFFT = 4; // Recorte frecuencias
+    private final int fs = 65536; // Frecuencia de muestreo (Hz)
 
     // --- Estado de las señales ---
     private Signal senalEntrada;
@@ -174,10 +175,10 @@ public class MainViewController implements Initializable {
 
         // Actualizar series (sin recrear los LineChart)
         Graficador.actualizarSerie(chartEntrada.getData().get(0), entradaConRuido, paso, factorRecorte, false);
-        Graficador.actualizarSerie(chartFFTEntrada.getData().get(0), senalEntradaFFT, pasoFft, 1, true);
-        Graficador.actualizarSerie(serieRespuestaFiltro, respuestaFiltro, pasoRespuestaFiltro, 1, true);
+        Graficador.actualizarSerie(chartFFTEntrada.getData().get(0), senalEntradaFFT, pasoFft, factorRecorteFFT, true);
+        Graficador.actualizarSerie(serieRespuestaFiltro, respuestaFiltro, pasoRespuestaFiltro, factorRecorteFFT, true);
         Graficador.actualizarSerie(chartSalida.getData().get(0), senalSalida, paso, factorRecorte, false);
-        Graficador.actualizarSerie(chartFFTSalida.getData().get(0), senalSalidaFFT, pasoFft, 1, true);
+        Graficador.actualizarSerie(chartFFTSalida.getData().get(0), senalSalidaFFT, pasoFft, factorRecorteFFT, true);
     }
     
     // --- Handlers FXML: señal de entrada ---
