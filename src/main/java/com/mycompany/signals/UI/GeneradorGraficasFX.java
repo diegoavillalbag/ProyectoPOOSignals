@@ -13,7 +13,7 @@ import javafx.scene.chart.XYChart;
 public class GeneradorGraficasFX {
 
     /** Umbral respecto al pico: max / 10^ORDENES (valores por debajo se grafican como 0). */
-    private static final int ORDENES_MAGNITUD_MINIMAS = 3;
+    private static final int ORDENES_MAGNITUD_MINIMAS = 4;
     /** Tolerancia fija entre puntos sucesivos en el reductor de cadenas. */
     private static final double EPSILON = 1e-5;
 

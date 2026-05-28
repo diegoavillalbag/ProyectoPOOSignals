@@ -51,6 +51,15 @@
                                              <VBox.margin>
                                                 <Insets top="10.0" />
                                              </VBox.margin></Button>
+                                          <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0" VBox.vgrow="ALWAYS">
+                                             <children>
+                                                <Button fx:id="BotonGuardar1" mnemonicParsing="false" onAction="#BotonGuardarOnAction" text="Guardar Estado" />
+                                                <Button fx:id="BotonCargar1" mnemonicParsing="false" onAction="#BotonCargarOnAction" text="Cargar Estado" />
+                                             </children>
+                                             <VBox.margin>
+                                                <Insets bottom="20.0" />
+                                             </VBox.margin>
+                                          </VBox>
                                        </children>
                                        <padding>
                                           <Insets left="5.0" right="5.0" top="10.0" />
@@ -91,6 +100,15 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Button>
+                                          <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0" VBox.vgrow="ALWAYS">
+                                             <VBox.margin>
+                                                <Insets bottom="20.0" />
+                                             </VBox.margin>
+                                             <children>
+                                                <Button fx:id="BotonGuardar2" mnemonicParsing="false" onAction="#BotonGuardarOnAction" text="Guardar Estado" />
+                                                <Button fx:id="BotonCargar2" mnemonicParsing="false" onAction="#BotonCargarOnAction" text="Cargar Estado" />
+                                             </children>
+                                          </VBox>
                                        </children>
                                     </VBox>
                                  </content>
@@ -119,6 +137,15 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Button>
+                                          <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0">
+                                             <VBox.margin>
+                                                <Insets bottom="20.0" />
+                                             </VBox.margin>
+                                             <children>
+                                                <Button fx:id="BotonGuardar3" mnemonicParsing="false" onAction="#BotonGuardarOnAction" text="Guardar Estado" />
+                                                <Button fx:id="BotonCargar3" mnemonicParsing="false" onAction="#BotonCargarOnAction" text="Cargar Estado" />
+                                             </children>
+                                          </VBox>
                                        </children>
                                        <padding>
                                           <Insets left="5.0" right="5.0" top="10.0" />

@@ -1,10 +1,12 @@
 package com.mycompany.signals.model;
 
+import java.io.Serializable;
+
 /**
  * Contrato para filtros digitales en tiempo discreto.
  * Permite aplicar el filtro a una señal y obtener su respuesta en frecuencia.
  */
-public interface Filtro {
+public interface Filtro extends Serializable {
 
     /**
      * Aplica el filtro a una señal dada.

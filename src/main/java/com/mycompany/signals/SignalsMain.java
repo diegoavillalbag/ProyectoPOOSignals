@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 /**
@@ -25,7 +26,8 @@ public class SignalsMain extends Application {
         scene.getStylesheets().add(getClass().getResource("/ui/styles/mainview.css").toExternalForm());
 
         // 4. Configurar y mostrar la ventana
-        primaryStage.setTitle("Mi App JavaFX");
+        primaryStage.setTitle("Simulador de Señales y Filtros");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/ui/images/logo3.png")));
         primaryStage.setScene(scene);
         primaryStage.show();
     }

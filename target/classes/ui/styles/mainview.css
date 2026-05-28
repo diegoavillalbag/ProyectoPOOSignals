@@ -1,7 +1,125 @@
-/*
- * Empty Stylesheet file.
- */
-
-.mainFxmlClass {
-
+/* =========================================================================
+   1. CONFIGURACIÓN GLOBAL (TEMA OSCURO BASE)
+   ========================================================================= */
+.root {
+    /* Colores de fondo principales */
+    -fx-base: #2b3034;
+    -fx-background: #212529;
+    
+    /* Fondos para campos de texto, listas, tablas y paneles internos */
+    -fx-control-inner-background: #343a40;
+    -fx-control-inner-background-alt: derive(-fx-control-inner-background, -5%);
+    
+    /* Color de acento de la app (Botones activos, barras de progreso, focos) */
+    -fx-accent: #0d6efd;
+    -fx-focus-color: -fx-accent;
+    -fx-faint-focus-color: #0d6efd22;
 }
+
+/* Ajustes finos de legibilidad para textos estándar */
+.label {
+    -fx-text-fill: #f8f9fa;
+}
+
+.text-field, .text-area {
+    -fx-prompt-text-fill: #adb5bd;
+    -fx-highlight-fill: -fx-accent;
+    -fx-highlight-text-fill: white;
+}
+
+/* Modernización sutil de las barras de desplazamiento (Scrollbars) */
+.scroll-bar .thumb {
+    -fx-background-color: #495057;
+    -fx-background-radius: 4px;
+}
+.scroll-bar .thumb:hover {
+    -fx-background-color: #6c757d;
+}
+
+/* =========================================================================
+   2. ESTILOS ESPECÍFICOS PARA GRÁFICOS (LINECHART)
+   ========================================================================= */
+
+/* Contenedor externo del gráfico */
+.chart {
+    -fx-padding: 15px;
+    -fx-background-color: #212529; 
+}
+
+/* El lienzo/fondo donde se cruzan las líneas del gráfico */
+.chart-plot-background {
+    -fx-background-color: #1a1d20; 
+}
+
+/* Líneas de la cuadrícula (Grid) */
+.chart-vertical-grid-lines,
+.chart-horizontal-grid-lines {
+    -fx-stroke: #2c3136;
+    -fx-stroke-dash-array: 3px 3px; /* Efecto punteado moderno */
+}
+
+/* ---- CONFIGURACIÓN DE LOS EJES (AXIS) ---- */
+
+/* Números y etiquetas en los ejes X e Y */
+.axis {
+    -fx-tick-label-fill: #adb5bd; 
+    -fx-font-size: 11px;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* Títulos principales de los ejes */
+.axis-label {
+    -fx-text-fill: #f8f9fa; 
+    -fx-font-weight: bold;
+}
+
+/* Pequeñas marcas de graduación en los bordes */
+.axis-tick-mark,
+.axis-minor-tick-mark {
+    -fx-stroke: #495057;
+}
+
+/* La línea sólida principal que forma el eje */
+.axis-axis-label-line {
+    -fx-stroke: #495057;
+}
+
+/* ---- LEYENDA (LEGEND) ---- */
+.chart-legend {
+    -fx-background-color: #2b3034;
+    -fx-background-radius: 5px;
+    -fx-border-color: #343a40;
+    -fx-border-radius: 5px;
+    -fx-padding: 8px;
+}
+
+.chart-legend-item {
+    -fx-text-fill: #e9ecef;
+}
+
+/* =========================================================================
+   3. COLORES NEÓN PARA LAS LÍNEAS DE DATOS (SERIES)
+   ========================================================================= */
+
+/* --- Serie 0: Violeta Eléctrico --- */
+.default-color0.chart-series-line { 
+    -fx-stroke: #b388ff; 
+    -fx-stroke-width: 2.5px; 
+}
+.default-color0.chart-line-symbol { 
+    -fx-background-color: #b388ff, #212529; 
+    -fx-background-radius: 5px;
+    -fx-padding: 5px; 
+}
+
+/* --- Serie 1: Turquesa / Cyan --- */
+.default-color1.chart-series-line { 
+    -fx-stroke: #00adb5; 
+    -fx-stroke-width: 2.5px; 
+}
+.default-color1.chart-line-symbol { 
+    -fx-background-color: #00adb5, #212529; /* Borde de color, centro oscuro estilo 'glow' */
+    -fx-background-radius: 5px;
+    -fx-padding: 5px; 
+}
+

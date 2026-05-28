@@ -1,10 +1,12 @@
 package com.mycompany.signals.model;
 
+import java.io.Serializable;
+
 /**
  * Representa una señal discreta en el tiempo: eje t[n] y amplitudes f(t)[n].
  * El tamaño de f(t) debe ser potencia de 2 para poder calcular la FFT.
  */
-public class Signal {
+public class Signal implements Serializable {
 
     private final double[] t;  // Eje temporal (s)
     private final double[] ft; // Amplitudes de la señal

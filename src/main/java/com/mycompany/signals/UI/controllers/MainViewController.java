@@ -11,11 +11,25 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.chart.LineChart;
 import javafx.event.ActionEvent;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 
+// Paquetes de input/output
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+// Paquetes del programa
 import com.mycompany.signals.model.Signal;
 import com.mycompany.signals.model.GeneradorFiltros;
 import com.mycompany.signals.UI.GeneradorGraficasFX;
 import com.mycompany.signals.model.GeneradorRuido;
+import com.mycompany.signals.model.EstadoPrograma;
+
 
 /**
  * Controlador de la vista principal: señal de entrada, ruido, filtro y cuatro gráficos.
@@ -92,6 +106,12 @@ public class MainViewController implements Initializable {
     @FXML private TextField FilterPuntos; // Solo habilitado para Media y Mediana
     @FXML private TextField FilterSigma; // Solo habilitado para Hampel
     
+    // --- Botones de Guardado ---
+    @FXML private Button BotonGuardar1;
+    @FXML private Button BotonGuardar2;
+    @FXML private Button BotonGuardar3;
+    
+    
     
     @FXML
     @Override
@@ -117,7 +137,7 @@ public class MainViewController implements Initializable {
         
         // Poblar ChoiceBox y TextField de cada sección
         SignalSelector.getItems().addAll(opcionesTipoSenalEntrada);
-        SignalSelector.setValue(opcionesTipoSenalEntrada[0]);
+        SignalSelector.setValue(opcionesTipoSenalEntrada[1]);
         SignalFreq.setText(String.valueOf(signalFreq));
         SignalAmp.setText(String.valueOf(signalAmp));
 
@@ -244,13 +264,17 @@ public class MainViewController implements Initializable {
         String freqEntrada = SignalFreq.getText();
         String ampEntrada = SignalAmp.getText();
         
-        // Expresión regular para números decimales positivos (ej: 10, 3.14, 0.5)
-        String regexDecimalPositivo = "^[0-9]+(\\.[0-9]+)?$";
-
-        // Verificar que ambos inputs cumplan con el formato decimal positivo
-        if (!freqEntrada.matches(regexDecimalPositivo) || !ampEntrada.matches(regexDecimalPositivo)) {
-            SignalFreq.setText("ERROR: Debe ser decimal positivo");
-            SignalAmp.setText("ERROR");
+        // Validar frecuencia
+        String validationError = validarEntrada("Frecuencia de Señal", freqEntrada, 0.1, 8000, true);
+        if (validationError != null) {
+            mostrarError(validationError);
+            return;
+        }
+        
+        // Validar amplitud
+        validationError = validarEntrada("Amplitud de Señal", ampEntrada, 0.01, 10, true);
+        if (validationError != null) {
+            mostrarError(validationError);
             return;
         }
         
@@ -278,6 +302,9 @@ public class MainViewController implements Initializable {
         
     }
     
+    /**
+     * Borra la señal de entrada y restablece los valores de la UI a cero.
+     */
     @FXML
     private void SignalDeleteOnAction(ActionEvent event) { 
         senalEntrada = Signal.crearContinua( 0, fs, N);
@@ -302,24 +329,31 @@ public class MainViewController implements Initializable {
         String filterPuntos = FilterPuntos.getText();
         String filterSigma = FilterSigma.getText();
         
-        // Expresión regular para números decimales positivos (ej: 10, 3.14, 0.5)
-        String regexDecimalPositivo = "^[0-9]+(\\.[0-9]+)?$";
-
-        // Verificar que ambos inputs cumplan con el formato decimal positivo
-        if (!filterFc.matches(regexDecimalPositivo) || !filterQ.matches(regexDecimalPositivo)
-            || !filterSigma.matches(regexDecimalPositivo) ) {
-            FilterFc.setText("ERROR");
-            FilterQ.setText("ERROR");
-            FilterSigma.setText("ERROR");
+        // Validar Fc (frecuencia de corte)
+        String validationError = validarEntrada("Frecuencia de Corte", filterFc, 1, 8000, true);
+        if (validationError != null) {
+            mostrarError(validationError);
             return;
         }
         
-        // Expresión regular para números enteros positivos (ej: 10, 42, 0)
-        String regexEnteroPositivo = "^[0-9]+$";
-
-        // Verificar que "Puntos" cumpla con el formato entero positivo
-        if (!filterPuntos.matches(regexEnteroPositivo)) {
-            FilterPuntos.setText("ERROR");
+        // Validar Q
+        validationError = validarEntrada("Factor Q", filterQ, 0.1, 100, true);
+        if (validationError != null) {
+            mostrarError(validationError);
+            return;
+        }
+        
+        // Validar Sigma
+        validationError = validarEntrada("Sigma", filterSigma, 0.01, 10, true);
+        if (validationError != null) {
+            mostrarError(validationError);
+            return;
+        }
+        
+        // Validar Puntos
+        validationError = validarEntrada("Puntos", filterPuntos, 1, 100, false);
+        if (validationError != null) {
+            mostrarError(validationError);
             return;
         }
         
@@ -388,6 +422,9 @@ public class MainViewController implements Initializable {
         
     }
     
+    /**
+     * Restaura un filtro neutro de pasa-altos con frecuencia cero.
+     */
     @FXML
     private void FilterDeleteOnAction(ActionEvent event){
         filtroActual = GeneradorFiltros.crearPasaAltos(0, fs);
@@ -396,6 +433,10 @@ public class MainViewController implements Initializable {
 
     // --- Handlers FXML: ruido ---
 
+
+    /**
+     * Añade ruido nuevo al ruido existente según el tipo seleccionado.
+     */
     @FXML
     private void NoiseSumOnAction(ActionEvent event) {
         // Obtener datos de la interfaz
@@ -404,11 +445,24 @@ public class MainViewController implements Initializable {
         String noiseAmp = NoiseAmp.getText();
         String noisePrctg = NoisePrctg.getText();
         
-        String regexDecimalPositivo = "^[0-9]+(\\.[0-9]+)?$";
-        if (!noiseFreq.matches(regexDecimalPositivo) || !noiseAmp.matches(regexDecimalPositivo) || !noisePrctg.matches(regexDecimalPositivo)) {
-            NoiseFreq.setText("ERROR");
-            NoiseAmp.setText("ERROR");
-            NoisePrctg.setText("ERROR");
+        // Validar frecuencia de ruido
+        String validationError = validarEntrada("Frecuencia de Ruido", noiseFreq, 0.1, 8000, true);
+        if (validationError != null) {
+            mostrarError(validationError);
+            return;
+        }
+        
+        // Validar amplitud de ruido
+        validationError = validarEntrada("Amplitud de Ruido", noiseAmp, 0.01, 10, true);
+        if (validationError != null) {
+            mostrarError(validationError);
+            return;
+        }
+        
+        // Validar porcentaje de ruido
+        validationError = validarEntrada("Porcentaje de Ruido", noisePrctg, 0.01, 1, true);
+        if (validationError != null) {
+            mostrarError(validationError);
             return;
         }
 
@@ -430,6 +484,9 @@ public class MainViewController implements Initializable {
         actualizarGraficas();
     }
 
+    /**
+     * Reemplaza el ruido actual por uno nuevo según el tipo seleccionado.
+     */
     @FXML
     private void NoiseApplyOnAction(ActionEvent event) {
         String seleccionRuido = NoiseSelector.getValue();
@@ -437,11 +494,24 @@ public class MainViewController implements Initializable {
         String noiseAmp = NoiseAmp.getText();
         String noisePrctg = NoisePrctg.getText();
 
-        String regexDecimalPositivo = "^[0-9]+(\\.[0-9]+)?$";
-        if (!noiseFreq.matches(regexDecimalPositivo) || !noiseAmp.matches(regexDecimalPositivo) || !noisePrctg.matches(regexDecimalPositivo)) {
-            NoiseFreq.setText("ERROR");
-            NoiseAmp.setText("ERROR");
-            NoisePrctg.setText("ERROR");
+        // Validar frecuencia de ruido
+        String validationError = validarEntrada("Frecuencia de Ruido", noiseFreq, 0.1, 8000, true);
+        if (validationError != null) {
+            mostrarError(validationError);
+            return;
+        }
+        
+        // Validar amplitud de ruido
+        validationError = validarEntrada("Amplitud de Ruido", noiseAmp, 0.01, 10, true);
+        if (validationError != null) {
+            mostrarError(validationError);
+            return;
+        }
+        
+        // Validar porcentaje de ruido
+        validationError = validarEntrada("Porcentaje de Ruido", noisePrctg, 0.01, 1, true);
+        if (validationError != null) {
+            mostrarError(validationError);
             return;
         }
 
@@ -463,10 +533,159 @@ public class MainViewController implements Initializable {
         actualizarGraficas();
     }
     
+    /**
+     * Elimina todo el ruido actual dejando la señal de entrada limpia.
+     */
     @FXML
     private void NoiseDeleteOnAction(ActionEvent event){
         ruidoEntrada = Signal.crearContinua(0, fs, N);
         
         actualizarGraficas();
     }
+    
+    /**
+     * Guarda el estado completo del programa en un archivo .dat.
+     */
+    @FXML
+    private void BotonGuardarOnAction(ActionEvent event){
+        // 1. Crear la cápsula de estado y llenarla con los datos actuales
+        EstadoPrograma estado = new EstadoPrograma();
+
+        estado.senalEntrada = this.senalEntrada;
+        estado.ruidoEntrada = this.ruidoEntrada;
+        estado.filtroActual = this.filtroActual;
+
+        estado.tipoSenal = SignalSelector.getValue();
+        estado.freqSenal = SignalFreq.getText();
+        estado.ampSenal = SignalAmp.getText();
+
+        estado.tipoRuido = NoiseSelector.getValue();
+        estado.freqRuido = NoiseFreq.getText();
+        estado.ampRuido = NoiseAmp.getText();
+        estado.prctgRuido = NoisePrctg.getText();
+
+        estado.tipoFiltro = FilterSelector.getValue();
+        estado.fcFiltro = FilterFc.getText();
+        estado.qFiltro = FilterQ.getText();
+        estado.puntosFiltro = FilterPuntos.getText();
+        estado.sigmaFiltro = FilterSigma.getText();
+
+        // 2. Abrir ventana de diálogo para elegir dónde guardar
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar Estado de Señales");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de Datos (*.dat)", "*.dat"));
+        
+        // Obtener el Stage actual desde el evento
+        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+
+        // 3. Serializar y guardar en el archivo
+        if (file != null) {
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+                oos.writeObject(estado);
+                System.out.println("Datos guardados exitosamente en: " + file.getAbsolutePath());
+            } catch (Exception e) {
+                System.err.println("Error al guardar el archivo: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Valida que una entrada sea numérica y esté dentro de los límites establecidos.
+     * @param nombreCampo Nombre del campo para mostrar en el error
+     * @param valor Valor a validar
+     * @param minimo Valor mínimo aceptado
+     * @param maximo Valor máximo aceptado
+     * @param esDecimal true si es decimal, false si es entero
+     * @return null si la validación es exitosa, mensaje de error en caso contrario
+     */
+    private String validarEntrada(String nombreCampo, String valor, double minimo, double maximo, boolean esDecimal) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return nombreCampo + ": El campo no puede estar vacío.";
+        }
+        
+        try {
+            double numValue = Double.parseDouble(valor);
+            
+            if (esDecimal) {
+                // Para decimales
+                if (numValue <= minimo || numValue > maximo) {
+                    return nombreCampo + ": Debe estar entre " + minimo + " y " + maximo + ".";
+                }
+            } else {
+                // Para enteros
+                if (numValue != Math.floor(numValue)) {
+                    return nombreCampo + ": Debe ser un número entero.";
+                }
+                int intValue = (int) numValue;
+                if (intValue < minimo || intValue > maximo) {
+                    return nombreCampo + ": Debe estar entre " + (int)minimo + " y " + (int)maximo + ".";
+                }
+            }
+            return null; // Validación exitosa
+        } catch (NumberFormatException e) {
+            return nombreCampo + ": Debe ser un número válido.";
+        }
+    }
+    
+    /**
+     * Muestra un diálogo de error al usuario.
+     * @param mensaje Mensaje de error a mostrar
+     */
+    private void mostrarError(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error de Validación");
+        alert.setHeaderText("Entrada Inválida");
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
+    
+    /**
+     * Carga un estado previo del programa desde un archivo .dat.
+     */
+    @FXML
+    private void BotonCargarOnAction(ActionEvent event){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Abrir Estado de Señales");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos de Datos (*.dat)", "*.dat"));
+        
+        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                // 1. Deserializar el objeto
+                EstadoPrograma estado = (EstadoPrograma) ois.readObject();
+
+                // 2. Restaurar los modelos
+                this.senalEntrada = estado.senalEntrada;
+                this.ruidoEntrada = estado.ruidoEntrada;
+                this.filtroActual = estado.filtroActual;
+
+                // 3. Restaurar la interfaz gráfica (UI)
+                SignalSelector.setValue(estado.tipoSenal);
+                SignalFreq.setText(estado.freqSenal);
+                SignalAmp.setText(estado.ampSenal);
+
+                NoiseSelector.setValue(estado.tipoRuido);
+                NoiseFreq.setText(estado.freqRuido);
+                NoiseAmp.setText(estado.ampRuido);
+                NoisePrctg.setText(estado.prctgRuido);
+
+                FilterSelector.setValue(estado.tipoFiltro);
+                FilterFc.setText(estado.fcFiltro);
+                FilterQ.setText(estado.qFiltro);
+                FilterPuntos.setText(estado.puntosFiltro);
+                FilterSigma.setText(estado.sigmaFiltro);
+
+                // 4. Refrescar los gráficos con los nuevos datos
+                actualizarGraficas();
+                System.out.println("Datos cargados exitosamente desde: " + file.getAbsolutePath());
+
+            } catch (Exception e) {
+                System.err.println("Error al cargar el archivo: " + e.getMessage());
+            }
+        }
+    }
+    
 }
