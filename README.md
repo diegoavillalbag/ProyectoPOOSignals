@@ -1,8 +1,8 @@
-# ProyectoPOOSignals
+# ProyectoSimuladorSeñalesYFiltros
 
 ## Descripción
 
-ProyectoPOOSignals es una aplicación JavaFX para generar, visualizar y procesar señales discretas. Permite crear señales básicas, añadir ruido, aplicar filtros digitales y observar los resultados en tiempo y frecuencia.
+Este proyecto es una aplicación JavaFX para generar, visualizar y procesar señales discretas. Permite crear diferentes formas de señal, añadir tipos de ruido y aplicar filtros (lineales y no lineales) para observar cómo cambian la señal en tiempo y frecuencia. Es útil para enseñanza, experimentación y prototipado rápido en procesamiento de señales; resuelve el problema de evaluar y comparar efectos de ruido y filtros sobre señales de manera interactiva y visual.
 
 ## Estructura del proyecto
 
